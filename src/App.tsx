@@ -9,8 +9,11 @@ import React, { useEffect } from "react";
 
 // 4- Sort the rows by clicking on the age table column header cell
 
-// Extra
-// Allow editing table cells
+// 5- Allow editing table cells
+
+// 6- Fetch initial data from external source
+
+// 7- Select multiple rows to be deleted
 
 type UserType = {
   id: number,
@@ -35,10 +38,10 @@ const getData = async () => {
 export default function App() {
   const [internalUsers, setInternalUsers] = React.useState<UserType[]>([]);
   const [sortOrder, setSortOrder] = React.useState<string>('asc');
+  const [selectedItems, setSelectedItems] = React.useState<Set<number>>(new Set);
 
   useEffect(() => {
     getData().then((data) => {
-      console.log(data)
       setInternalUsers(data);
     }).catch((e) => {
       console.log(e);
@@ -87,7 +90,23 @@ export default function App() {
     }
   };
 
+  const handleSelectItem = (itemId: number) => {
+    const tempSelItems = new Set(selectedItems);
+    if(selectedItems.has(itemId)) {
+      tempSelItems.delete(itemId)
+    } else {
+      tempSelItems.add(itemId)
+    }
+    setSelectedItems(tempSelItems);
+  }
 
+  const handleSelectAll = () => {
+    if(selectedItems.size === internalUsers.length) {
+      setSelectedItems(new Set);
+    } else {
+      setSelectedItems(new Set(internalUsers.map(item => item.id)))
+    }
+  }
 
   return (
     <div className="App">
@@ -96,6 +115,13 @@ export default function App() {
         <table>
           <thead>
             <tr>
+              <td>
+                <input 
+                  type="checkbox" 
+                  onChange={handleSelectAll} 
+                  checked={selectedItems.size === internalUsers.length}
+                />
+              </td>
               <th>Name</th>
               <th>
                 Age 
@@ -108,6 +134,13 @@ export default function App() {
           <tbody>
             {internalUsers.map((item) => (
               <tr key={item.id}>
+                <td>
+                  <input 
+                    type="checkbox"
+                    onChange={() => handleSelectItem(item.id)} 
+                    checked={selectedItems.has(item.id)}
+                  />
+                </td>
                 <td>
                   <span
                     contentEditable="plaintext-only"
